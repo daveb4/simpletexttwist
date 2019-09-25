@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Text Twist</title>
+        <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+    </head>
+    <body>
+        <h1>Welcome to Text Twist</h1>
+        <button id="start">Click for a rack</button>
+        <p></p>
+        <h1 id="win"></h1>
+        <h1>Score:</h1>
+        <h2 id="score">0</h2>
+        <h1>Solutions remaining:</h1>
+        <h2 id="count"></h2>
+        <h4>Current rack:</h4>
+        <h3 id="rack"></h3>
+        <h4 id="guessed"></h4>
+        <input type="text" id="guess">
+        <button id="checkanswer">Check</button>
+        <p id="check"></p>
+        <p id="correct?"></p>
+    </body>
+    <script>
+    var solutions=[];
+    var rack;
+    var guessedarr=[];
+    var score = 0;
+    var solutionsarr=[];
+    var solcount;
+        function getSolutions(rack){
+        
+            var jsonString = JSON.stringify(rack);
+        
+            $.ajax({
+                async: false,
+                url: "subracks.php",
+                method: "POST",
+                dataType: "text",
+                data: {myData:jsonString},
+                success: function(data){
+                //    document.getElementById("test").textContent = data;
+                    solutions = data.slice();
+                    //callBack(solutions);
+                    //document.getElementById("test").textContent = solutions;
+                }
+                
+            });
+        }
+        $("#start").on("click", function(data){
+        $.ajax({
+            url: "index.php",
+            method: "GET",
+            success: function (data) {
+                var info = data;
+                rack = info[0].rack;           
+                document.getElementById("rack").textContent = rack;
+                getSolutions(rack);
+                //document.getElementById("test2").textContent = solutions;
+                solutions = solutions.replace(/"/g,"");
+                solutions = solutions.replace("[","");
+                solutions = solutions.replace("]","");
+                solutionsarr = [];
+                solutionsarr = solutions.split(",");
+                solcount = solutionsarr.length;
+                document.getElementById("count").textContent = solcount;
+                //document.getElementById("test2").textContent = solutionsarr;
+                //document.getElementById("test3").textContent = solutionsarr[0];
+                //solutions = solutions.replace("\",\""," ");
+                /*
+                document.getElementById("test2").textContent = solutionsarr;
+                for (var i = 1; i < solutionsarr.length; i++){
+                    var newstr = "";
+                    for (var j = 0; solutionsarr[solutionsarr.length - 1] != solutionsarr[i]; i++){
+                        document.getElementById("test3").textContent = solutionsarr[i];
+                        newstr += "-";
+                    }
+                    guessedarr[i] = newstr;
+                }
+                document.getElementById("test2").textContent = guessedarr;
+                */
+                }
+            });
+        });
+        $("#checkanswer").on("click", function(){
+            var userinput = document.getElementById("guess").value.toUpperCase();
+            //document.getElementById("test3").textContent = userinput;
+            var arraycontainsword = (solutionsarr.indexOf(userinput) > -1);
+            if (arraycontainsword){
+                guessedarr.push(solutionsarr[solutionsarr.indexOf(userinput)]);
+                solutionsarr[solutionsarr.indexOf(userinput)] = null;
+                ++score;
+                document.getElementById("correct?").textContent = "Correct!";
+                document.getElementById("count").textContent = --solcount;
+            }
+            else document.getElementById("correct?").textContent = "Incorrect!";
+            document.getElementById("score").textContent = score;
+            document.getElementById("guessed").textContent = guessedarr;
+            if (solcount == 0){
+                document.getElementById("win").textContent = "YOU WIN!"
+            }
+            
+        })
+    
+    
+    </script>
+    <!--<script src="js2.js"></script>-->
+    <!--<script src="jstexttwist.js"></script>-->
+</html>
+
